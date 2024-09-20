@@ -1,8 +1,8 @@
 # Tauri + React + Typescript
-
+This repo has two branches the `qr-code` and the `events` branch. which contain the two demo's I wanted to show during our lunch & learn
+ 
 ## Recommended IDE Setup
 - [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
-
 
 # QR-Code demo:
 The QR code that is generated is bogus and isn't really scanable, It is only used to indicate that we can use a tauri command that uses a external library or tool which than can use in our frontend.
