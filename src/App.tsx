@@ -1,36 +1,47 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
+import { listen } from "@tauri-apps/api/event";
 import "./App.css";
 
 function App() {
-  const [qr, setQr] = useState("");
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [message, setMessage] = useState("");
 
-  async function generateQr() {
-    setQr(await invoke("qr", { name: qr }));
+  useEffect(() => {
+    const unlistenTick = listen<number>("timer-tick", (event) => {
+      console.log("Timer tick:", event.payload);
+      setTimeLeft(event.payload);
+    });
+
+    // Listen for 'timer-finished' event
+    const unlistenFinished = listen<string>("timer-finished", (event) => {
+      console.log("Timer finished:", event.payload);
+      setMessage(event.payload);
+      setTimeLeft(null);
+    });
+
+    return () => {
+      unlistenTick.then((unlisten) => unlisten());
+      unlistenFinished.then((unlisten) => unlisten());
+    };
+  }, []);
+
+  async function initiateTimer() {
+    try {
+      await invoke("initiate_timer_event");
+      console.log("Timer initiation command sent to backend.");
+      setMessage("");
+    } catch (error) {
+      console.error("Failed to invoke backend command:", error);
+    }
   }
 
   return (
-    <div className="container">
-      <h1>Welcome to Tauri!</h1>
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          generateQr();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => {
-            setQr(e.currentTarget.value);
-          }}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">submit</button>
-      </form>
-      <pre>
-        {qr}
-      </pre>
+    <div style={{ padding: "2rem" }}>
+      <h1>Tauri Timer Demo</h1>
+      <button onClick={initiateTimer}>Start Timer</button>
+      {timeLeft !== null && <p>Time Left: {timeLeft} seconds</p>}
+      {message && <p>{message}</p>}
     </div>
   );
 }
